@@ -1,0 +1,88 @@
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+    def __repr__(self):
+        return f"Node({self.val})"
+
+def lowestCommonAncestor_Binary(root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':
+    if not root or root == p or root == q:
+        return root
+    left_lca = lowestCommonAncestor_Binary(root.left, p, q)
+    right_lca = lowestCommonAncestor_Binary(root.right, p, q)
+    if left_lca and right_lca:
+        return root
+    return left_lca or right_lca
+
+class TreeNodeWithParent:
+    def __init__(self, val=0):
+        self.val = val
+        self.left = None
+        self.right = None
+        self.parent = None
+    def __repr__(self):
+        return f"Node({self.val})"
+
+def lowestCommonAncestor_WithParent(p: 'TreeNodeWithParent', q: 'TreeNodeWithParent') -> 'TreeNodeWithParent':
+    ancestors = set()
+    curr = p
+    while curr:
+        ancestors.add(curr)
+        curr = curr.parent
+    curr = q
+    while curr:
+        if curr in ancestors:
+            return curr
+        curr = curr.parent
+    return None
+
+class NaryNode:
+    def __init__(self, val=0, children=None):
+        self.val = val
+        self.children = children if children is not None else []
+    def __repr__(self):
+        return f"NaryNode({self.val})"
+
+def lowestCommonAncestor_Nary(root: 'NaryNode', p: 'NaryNode', q: 'NaryNode') -> 'NaryNode':
+    if not root or root == p or root == q:
+        return root
+    found_children = []
+    for child in root.children:
+        result = lowestCommonAncestor_Nary(child, p, q)
+        if result:
+            found_children.append(result)
+    if len(found_children) >= 2:
+        return root
+    if len(found_children) == 1:
+        return found_children[0]
+    return None
+
+if __name__ == "__main__":
+    print("--- 4. Lowest Common Ancestor ---")
+    
+    root = TreeNode(3)
+    root.left = TreeNode(5)
+    root.right = TreeNode(1)
+    root.left.left = TreeNode(6)
+    root.left.right = TreeNode(2)
+    p1, q1 = root.left, root.right
+    lca1 = lowestCommonAncestor_Binary(root, p1, q1)
+    print(f"LCA in Binary Tree for {p1.val} and {q1.val} is: {lca1.val}")
+
+    p_root = TreeNodeWithParent(3)
+    p_root.left = TreeNodeWithParent(5); p_root.left.parent = p_root
+    p_root.right = TreeNodeWithParent(1); p_root.right.parent = p_root
+    p_root.left.left = TreeNodeWithParent(6); p_root.left.left.parent = p_root.left
+    p_p, p_q = p_root.left.left, p_root.right
+    p_lca = lowestCommonAncestor_WithParent(p_p, p_q)
+    print(f"LCA with Parent Pointers for {p_p.val} and {p_q.val} is: {p_lca.val}")
+    
+    n_root = NaryNode(1)
+    n2, n3, n4 = NaryNode(2), NaryNode(3), NaryNode(4)
+    n5, n6 = NaryNode(5), NaryNode(6)
+    n_root.children = [n2, n3, n4]
+    n3.children = [n5, n6]
+    n_p, n_q = n5, n4
+    n_lca = lowestCommonAncestor_Nary(n_root, n_p, n_q)
+    print(f"LCA in N-ary Tree for {n_p.val} and {n_q.val} is: {n_lca.val}")
